@@ -13,6 +13,13 @@ function alloc_check(
     # cd to path if valid
     isdir(path) && cd(path)
 
+    for t in dependencies, d in walkdir(dirname(pathof(t))), f in d[end]
+        splitext(f)[2] == ".mem" && rm(joinpath(d[1], f))
+    end
+    for d in walkdir(path), f in d[end]
+        splitext(f)[2] == ".mem" && rm(joinpath(d[1], f))
+    end
+
     # add a proc (id == p) that track allocations
     p = first(
         if isnothing(threads)

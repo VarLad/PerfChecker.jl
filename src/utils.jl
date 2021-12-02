@@ -41,7 +41,6 @@ end
 function smart_paths(paths)
     splitted_paths = map(splitpath ∘ normpath, paths)
 
-    @info "debug" paths splitted_paths
     common = paths |> first |> dirname |> splitpath
     for path in splitted_paths
         to_pop = length(common)
@@ -57,4 +56,22 @@ function smart_paths(paths)
     end
 
     return joinpath(common...), map(joinpath, splitted_paths)
+end
+
+function make_dependencies_versions(D, modu)
+    function get_dep_version(d)
+        uuid = Pkg.project().dependencies[string(d)]
+        vers = Pkg.dependencies()[uuid].version
+        return [string(vers)]
+    end
+
+    deps = Dict{Module, Vector{String}}()
+    for d in D
+        if d == modu.first
+            push!(deps, (d => modu.second))
+        else
+            push!(deps, isa(d, Pair) ? d : (d => get_dep_version(d)))
+        end
+    end
+    return deps
 end
